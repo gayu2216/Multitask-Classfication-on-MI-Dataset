@@ -1,0 +1,47 @@
+import pandas as pd
+
+file_path = r"C:\Users\hung\Downloads\Multitask-Classfication-on-MI-Dataset\feature-engineering\MI.data"
+
+df = pd.read_csv(file_path, header=None, na_values=["?"])
+
+print("Dataset shape:", df.shape)
+
+mi_cols = list(range(44, 48))
+
+mi = df[mi_cols].apply(pd.to_numeric, errors="coerce").fillna(0).astype(int)
+
+df["mi_locations_count"] = (mi > 0).sum(axis=1)
+df["mi_any_flag"] = (df["mi_locations_count"] > 0).astype(int)
+df["mi_severe_count"] = (mi == 4).sum(axis=1)
+
+print("\nDistribution of mi_locations_count:")
+print(df["mi_locations_count"].value_counts().sort_index())
+
+print("\nDistribution of mi_severe_count:")
+print(df["mi_severe_count"].value_counts().sort_index())
+
+positive_cases = df[df["mi_locations_count"] > 0]
+
+print("\nNumber of patients with any MI:", len(positive_cases))
+
+print("\nSample positive rows:")
+print(
+    positive_cases[
+        mi_cols +
+        ["mi_locations_count", "mi_severe_count", "mi_any_flag"]
+    ].head(20)
+)
+
+print("\nManual verification of first 10 positive rows:")
+for idx, row in positive_cases.head(10).iterrows():
+    manual_count = (row[mi_cols] > 0).sum()
+    manual_severe = (row[mi_cols] == 4).sum()
+    print(
+        f"Row {idx}: "
+        f"count_manual={manual_count}, "
+        f"count_computed={row['mi_locations_count']} | "
+        f"severe_manual={manual_severe}, "
+        f"severe_computed={row['mi_severe_count']}"
+    )
+
+print("\nMI aggregation complete.")

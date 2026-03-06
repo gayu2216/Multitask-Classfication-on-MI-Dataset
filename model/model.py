@@ -7,6 +7,7 @@ from sklearn.impute import IterativeImputer
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report
+from imblearn.metrics import classification_report_imbalanced
 from imblearn.over_sampling import SMOTE
 from tqdm import tqdm
 import joblib
@@ -106,13 +107,13 @@ def evaluate_results(model, test_x, test_y_comp, test_y_mort):
     print("\n" + "="*50)
     print("TASK 1: COMPLICATIONS (Multi-label Results)")
     print("="*50)
-    print(classification_report(test_y_comp.cpu().numpy(), pred_comp, zero_division=0))
+    print(classification_report_imbalanced(test_y_comp.cpu().numpy(), pred_comp, zero_division=0))
 
     print("\n" + "="*50)
     print("TASK 2: MORTALITY (Multi-class Results)")
     print("="*50)
     mort_names = ["Survival"] + [f"Cause_{i}" for i in range(1, 8)]
-    print(classification_report(test_y_mort.cpu().numpy(), pred_mort, target_names=mort_names, zero_division=0))
+    print(classification_report_imbalanced(test_y_mort.cpu().numpy(), pred_mort, target_names=mort_names, zero_division=0))
 
 def save_clinical_model(model, scaler, filename="mi_multitask_model.pth"):
     torch.save(model.state_dict(), filename)
